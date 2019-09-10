@@ -99,6 +99,7 @@ def self.select_recipe
   answer1 = STDIN.gets.chomp
   i = 1
   more = true
+
   if answer1 == 'more'
     while more == true do
     i += 1
@@ -120,11 +121,24 @@ def self.select_recipe
         answer1 = STDIN.gets.chomp
       end
     end
-    binding.pry
-    answer1 #this is the ultimate recipe choice, need to get to recipe
   end
 
+  else 
+    recipe = @@recipe_list_array.find{|index_w_recipe|
+      index_w_recipe[answer1.length + 2..string.length - 1]}
+
+    json["results"].each do |hash|
+  hash.each do |k, v|
+    if v.include?(recipe)
+      Recipe.create("title": v, "url": hash["href"])
+    end
+  end
 end
 
+  end
+  end
+end
+
+  #@@recipe_list_array
 
 end

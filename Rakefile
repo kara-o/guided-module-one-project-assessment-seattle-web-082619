@@ -8,10 +8,9 @@ task :console do
 end
 
 # desc "Seed the database with some normal data"
-# task :seed do
-#   puts "seeding database..."
-#   DB[:conn].execute("DROP TABLE IF EXISTS notes")
-#   DB[:conn].execute("CREATE TABLE notes (id integer PRIMARY KEY, text string, is_complete string)")
-#   DB[:conn].execute("INSERT INTO notes(text, is_complete) VALUES('buy milk', 'incomplete'), ('feed cat', 'incomplete')")
-#   puts "Created #{Note.all.length} notes"
-# end
+#  task :seed do
+#    puts "seeding database..."
+#    DB[:conn].execute("DROP TABLE IF EXISTS users")
+#    DB[:conn].execute("CREATE TABLE users (id integer PRIMARY KEY, text string, is_complete string)")
+#    DB[:conn].execute("INSERT INTO users(first_name, last_name) VALUES(, 'incomplete'), ('feed cat', 'incomplete')")
+#  end
