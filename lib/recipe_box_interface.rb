@@ -25,6 +25,7 @@ def self.welcome
   if User.all.select{|user| user.full_name == first_name + " " + last_name}.length == 0
     User.create(first_name: first_name, last_name: last_name)
     puts "Yay, I'm so glad you decided to join!  Your account has been created.  Get ready to cook!"
+    RecipeBox.create
     self.options
 
   else
@@ -72,7 +73,7 @@ def self.recipe_search_by_ingredient
   json = get_json(@@url)
   #recipe_list = json["results"].each {|x| puts x["title"]}
   json["results"].each_with_index {|hash, index|
-    indexed_item = "#{index + 1}. #{hash["title"].delete("\n")}"
+    indexed_item = "#{index + 1}. #{hash["title"].strip}" #delete("\n")
     puts indexed_item
     @@recipe_list_array << indexed_item
   }
@@ -86,7 +87,7 @@ def self.recipe_search_by_name
   @@url = RECIPE_API + "?q=#{answer}"
   json = get_json(@@url)
   json["results"].each_with_index {|hash, index|
-    indexed_item = "#{index + 1}. #{hash["title"].delete("\n")}"
+    indexed_item = "#{index + 1}. #{hash["title"].strip}" #delete("\n")
     puts indexed_item
     @@recipe_list_array << indexed_item
   }
@@ -98,6 +99,7 @@ def self.select_recipe
   i = 1
   more = true
   answer1 = nil
+  json = get_json(@@url)
   while more == true do
     puts "Type the number of the recipe you want to view, or, type 'more' to see more recipes:"
     answer1 = STDIN.gets.chomp
@@ -116,8 +118,10 @@ def self.select_recipe
     end
   end
 
-  recipe = @@recipe_list_array.find{|index_w_recipe|
-    index_w_recipe[answer1.length + 2..index_w_recipe.length - 1]}
+  recipe_w_index = @@recipe_list_array.find{|recipe| recipe.include?(answer1)}
+  binding.pry
+  recipe = recipe_w_index[answer1.length + 2..recipe_w_index.length - 1]
+
 
   json["results"].each do |hash|
     hash.each do |k, v|
@@ -127,9 +131,29 @@ def self.select_recipe
     end
   end
 
-  #self.recipe_box_or_no
+  self.recipe_box_or_no
 
-end
+  end
+
+  def self.recipe_box_or_no
+
+    puts "Would you like to add this recipe to your recipe box? (Y/N)"
+    answer = STDIN.gets.chomp.downcase
+    if answer == "Y"
+
+
+
+
+
+
+    elsif answer == "N"
+
+
+    else
+     puts "Please enter a valid response - Y/N"
+    end
+
+  end
 
 
   # if answer1 == 'more'

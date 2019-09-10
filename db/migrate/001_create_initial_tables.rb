@@ -8,8 +8,9 @@ class CreateInitialTables < ActiveRecord::Migration[5.2]
       t.timestamps
     end
 
-    create_table :recipe_boxes do |t|
+    create_table :recipes_boxes do |t|
       t.integer :user_id
+      t.integer :recipe_id
       t.timestamps
     end
 
