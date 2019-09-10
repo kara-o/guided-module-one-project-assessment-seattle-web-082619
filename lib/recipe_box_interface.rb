@@ -95,50 +95,69 @@ def self.recipe_search_by_name
 end
 
 def self.select_recipe
-  puts "Type the number of the recipe you want to view, or, type 'more' to see more recipes:"
-  answer1 = STDIN.gets.chomp
   i = 1
   more = true
+  answer1 = nil
+  while more == true do
+    puts "Type the number of the recipe you want to view, or, type 'more' to see more recipes:"
+    answer1 = STDIN.gets.chomp
+    if answer1 == "more"
+      i += 1
+      url = @@url + "&p=#{i}"
+      json = get_json(url)
+      length = @@recipe_list_array.length
+      json["results"].each_with_index {|hash, index|
+        indexed_item = "#{index + 1 + length}. #{hash["title"].delete("\n")}"
+        puts indexed_item
+        @@recipe_list_array << indexed_item
+      }
+    else
+      more = false
+    end
+  end
 
-  if answer1 == 'more'
-    while more == true do
-    i += 1
-    url = @@url + "&p=#{i}"
-    json = get_json(url)
-    length = @@recipe_list_array.length
-    json["results"].each_with_index {|hash, index|
-      indexed_item = "#{index + 1 + length}. #{hash["title"].delete("\n")}"
-      puts indexed_item
-      @@recipe_list_array << indexed_item
-    }
-    puts "Do you want to see more? (Y/N)"
-      answer2 = STDIN.gets.chomp
-      if answer2 == "Y"
-        more = true
-      elsif answer2 == "N"
-        more = false
-        puts "Type the number of the recipe you want to view:"
-        answer1 = STDIN.gets.chomp
+  recipe = @@recipe_list_array.find{|index_w_recipe|
+    index_w_recipe[answer1.length + 2..index_w_recipe.length - 1]}
+
+  json["results"].each do |hash|
+    hash.each do |k, v|
+      if v.include?(recipe)
+        Recipe.create("title": v, "url": hash["href"])
       end
     end
   end
 
-  else 
-    recipe = @@recipe_list_array.find{|index_w_recipe|
-      index_w_recipe[answer1.length + 2..string.length - 1]}
+  #self.recipe_box_or_no
 
-    json["results"].each do |hash|
-  hash.each do |k, v|
-    if v.include?(recipe)
-      Recipe.create("title": v, "url": hash["href"])
-    end
-  end
 end
 
-  end
-  end
-end
 
-  #@@recipe_list_array
+  # if answer1 == 'more'
+  #   while more == true do
+  #   i += 1
+    # url = @@url + "&p=#{i}"
+    # json = get_json(url)
+    # length = @@recipe_list_array.length
+    # json["results"].each_with_index {|hash, index|
+    #   indexed_item = "#{index + 1 + length}. #{hash["title"].delete("\n")}"
+    #   puts indexed_item
+    #   @@recipe_list_array << indexed_item
+    # }
+  #   puts "Do you want to see more? (Y/N)"
+  #     answer2 = STDIN.gets.chomp
+  #     if answer2 == "Y"
+  #       more = true
+  #     elsif answer2 == "N"
+  #       more = false
+  #       puts "Type the number of the recipe you want to view:"
+  #       answer1 = STDIN.gets.chomp
+  #     end
+  #   end
+  #
+  # else
+  #    answer1 = STDIN.gets.chomp
+  # end
+
+
 
 end
