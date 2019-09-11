@@ -150,7 +150,6 @@ class RecipeBoxCLI
         if v.include?(recipe)
           Recipe.create("title": v, "url": hash["href"], "ingredients": hash["ingredients"])
           url = hash["href"]
-          binding.pry
           puts `open #{url}`
         end
       end
@@ -228,32 +227,68 @@ class RecipeBoxCLI
 
 
     def self.view_shopping_list
-      self.my_recipes.each do |recipe|
-        IngredientItem.where(recipe_id: recipe.id).uniq.each do |ing_item|
-          if ing_item.is_complete == true
-            puts "(✓) #{ing_item.name}"
+      if @@this_user.recipes.length == 0
+        puts "No list yet, we need to find recipes first!!"
+      else
+        self.my_recipes.each do |recipe|
+          IngredientItem.where(recipe_id: recipe.id).each do |ing_item|
+            if ing_item.is_complete == true
+              puts "(✓) #{ing_item.name}"
+            else
+              puts "( ) #{ing_item.name}"
+            end
+          end
+        end
+
+
+        is_running = true
+
+        while is_running == true
+          puts "What would you like to do?  Please enter a number: "
+          puts "1. Check off item on list"
+          puts "2. Clear shopping list"
+          puts "3. Return to menu"
+          input = STDIN.gets.chomp.downcase
+
+          if input == "1"
+            self.check_off_items
+          elsif input == "2"
+            self.my_recipes.each do |recipe|
+              IngredientItem.where(recipe_id: recipe.id).each do |ing_item|
+                ing_item.destroy
+              end
+            end
+          elsif input == "3"
+            is_running = false
           else
-            puts "( ) #{ing_item.name}"
+            "Please enter a valid response!"
           end
         end
       end
-      puts "Do you want to check off any items from your list? (Y/N)"
-      input = STDIN.gets.chomp.downcase
-      if input == "y"
-        self.check_off_items
-      elsif input == "n"
-        self.options
-      else
-        puts "Please enter a valid response!"
-      end
     end
+
+
+    #
+    #
+    #
+    #   puts "Do you want to check off any items from your list? (Y/N)"
+    #
+    #   if input == "y"
+    #     self.check_off_items
+    #   elsif input == "n"
+    #     is_running = false
+    #     puts "Do you want to "
+    #   else
+    #     puts "Please enter a valid response!"
+    #   end
+    # end
 
    def self.check_off_items
      puts "Which item can we check off your list?"
      input = STDIN.gets.chomp.downcase
      binding.pry
      self.my_recipes.each do |recipe|
-       IngredientItem.where(recipe_id: recipe.id, name: input, is_complete: false).uniq.each do |ing_item|
+       IngredientItem.where(recipe_id: recipe.id, name: input, is_complete: false).each do |ing_item|
          ing_item.update(is_complete: true)
        end
      end
