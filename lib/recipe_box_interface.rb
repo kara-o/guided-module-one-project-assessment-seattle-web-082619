@@ -1,5 +1,7 @@
 require_relative '../config/environment.rb'
 
+TESTING OUT SHOPPING CART
+
 class RecipeBoxCLI
 
   RECIPE_API = 'http://www.recipepuppy.com/api/'
