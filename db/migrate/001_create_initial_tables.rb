@@ -1,7 +1,5 @@
 class CreateInitialTables < ActiveRecord::Migration[5.2]
 
-
-CHANGE
   def change
 
     create_table :users do |t|
@@ -14,12 +12,12 @@ CHANGE
       t.string :ingredients
       t.string :url
       t.integer :user_id
-      t.integer :ingredient_id
     end
 
     create_table :ingredients do |t|
       t.string :name
       t.boolean :is_complete
+      t.integer :recipe_id
     end
 
   end

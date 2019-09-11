@@ -1,41 +1,44 @@
 require_relative '../config/environment.rb'
 
-TESTING OUT USER/ING/REC
-
 class RecipeBoxCLI
 
   RECIPE_API = 'http://www.recipepuppy.com/api/'
 
-  @@recipe_list_array = []
-
-  @@url = nil
-
-  @@this_user = nil
+  # @@recipe_list_array = []
+  #
+  # @@url = nil
+  #
+  # @@this_user = nil
 
   def self.welcome
     puts `clear`
+    puts ''
+    puts ''
     puts "Welcome to Recipe Box!"
+    puts ''
+    puts ''
     puts "What is your first name?"
     first_name = STDIN.gets.strip.downcase
     puts "What is your last name?"
     last_name = STDIN.gets.strip.downcase
 
-    if !User.find_by(first_name: first_name, last_name: last_name) #User.all.select{|user| user.full_name == first_name + " " + last_name}.length == 0
-      @@this_user = User.create(first_name: first_name, last_name: last_name)
+    if !User.find_by(first_name: first_name, last_name: last_name)
+      this_user = User.create(first_name: first_name, last_name: last_name)
+      puts ''
       puts "Yay, I'm so glad you decided to join!  Your account has been created.  Get ready to cook!"
-      new_box = RecipesBox.create
-      new_box.user_id = @@this_user.id
-      new_box.save
-      self.options
+      puts ''
+      self.options(this_user)
 
     else
-      @@this_user = User.find_by(first_name: first_name, last_name: last_name)
+      this_user = User.find_by(first_name: first_name, last_name: last_name)
+      puts ''
       puts "Welcome back!  You must be hungry!"
-      self.options
+      puts ''
+      self.options(this_user)
     end
   end
 
-  def self.options
+  def self.options(this_user)
     is_running = true
 
     while is_running
@@ -46,7 +49,7 @@ class RecipeBoxCLI
       puts "4. View my shopping list"
       puts "5. Exit"
 
-     choice = STDIN.gets.chomp
+     input = STDIN.gets.chomp
      if choice == "1"
        self.recipe_search_by_ingredient
 
