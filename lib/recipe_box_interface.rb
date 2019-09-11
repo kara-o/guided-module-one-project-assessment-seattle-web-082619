@@ -18,16 +18,16 @@ class RecipeBoxCLI
     puts "What is your last name?"
     last_name = STDIN.gets.chomp.downcase
 
-    if User.all.select{|user| user.full_name == first_name + " " + last_name}.length == 0
+    if !User.find_by(first_name: first_name, last_name: last_name) #User.all.select{|user| user.full_name == first_name + " " + last_name}.length == 0
       @@this_user = User.create(first_name: first_name, last_name: last_name)
       puts "Yay, I'm so glad you decided to join!  Your account has been created.  Get ready to cook!"
       new_box = RecipesBox.create
-      new_box.user_id = this_user.id
+      new_box.user_id = @@this_user.id
       new_box.save
       self.options
 
     else
-      @@this_user = User.all.select{user.full_name == first_name + " " + last_name}
+      @@this_user = User.find_by(first_name: first_name, last_name: last_name)
       puts "Welcome back!  You must be hungry!"
       self.options
     end
@@ -52,9 +52,25 @@ class RecipeBoxCLI
        self.recipe_search_by_name
 
      elsif choice == "3"
-       @@this_user.recipes
+       my_recipes = @@this_user.recipes
+       my_recipes.each_with_index{|recipe, index| puts "#{index + 1}. #{recipe.title}"}
+       puts "If you want to view one of your recipes please type its number, or, type 'back' to return to the menu:" #index + 1?? recipe array
+       input = STDIN.gets.chomp
+       binding.pry
+       if input == "back"
+         self.options
+       elsif [0..my_recipes.length].include?(input.to_i)
+         binding.pry
+         #recipe = my_recipes.find{|recipe| recipe.title.include?(recipe.title[input.length] + 2..recipe.title.length - 1])}
+         recipe = my_recipes[input.to_i + 1]
+         puts `open #{recipe.url}`
+       else
+         puts "Please enter a valid response:"
+       end
+
 
      elsif choice == "4"
+       puts "Soon you'll have a shopping list!"
 
      elsif choice == "5"
        puts "Goodbye!"
@@ -126,6 +142,8 @@ class RecipeBoxCLI
       hash.each do |k, v|
         if v.include?(recipe)
           Recipe.create("title": v, "url": hash["href"])
+          url = hash["href"]
+          puts `open #{url}`
         end
       end
     end
@@ -138,32 +156,37 @@ class RecipeBoxCLI
 
       puts "Would you like to add this recipe to your recipe box? (Y/N)"
       answer1 = STDIN.gets.chomp.downcase
-      is_running = true
-      while is_running == true
-      if answer == "y"
+      # is_running = true
+      # while is_running == true
+      if answer1 == "y"
         my_box = RecipesBox.find_by(user_id: @@this_user.id)
         my_box.recipe_id = Recipe.last.id
+        my_box.save
         puts "Done!  You can view your recipe box from the main menu."
-        is_running = false
+        # is_running = false
         puts "Do you want to add the ingredients for this recipe to your shopping list? (Y/N)"
 
         answer2 = STDIN.gets.chomp.downcase
         if answer2 == "y"
+          puts "Soon you'll have a list!"
+
 
         elsif answer2 == "n"
+          puts "Wow you must have a good memory!"
 
         else
           puts "Please enter a valid response - Y/N:"
+        end
 
 
 
 
       elsif answer1 == "n"
-        is_running = false
+        puts "Okay, well let's look for a better recipe!"
         self.options
 
       else
-       puts "Please enter a valid response - Y/N:"
+        puts "Please enter a valid response - Y/N:"
       end
 
     end
