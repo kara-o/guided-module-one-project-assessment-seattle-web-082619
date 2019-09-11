@@ -30,7 +30,6 @@ class RecipeBoxCLI
       @@this_user = User.all.select{user.full_name == first_name + " " + last_name}
       puts "Welcome back!  You must be hungry!"
       self.options
-
     end
   end
 
@@ -53,6 +52,7 @@ class RecipeBoxCLI
        self.recipe_search_by_name
 
      elsif choice == "3"
+       @@this_user.recipes
 
      elsif choice == "4"
 
@@ -60,7 +60,7 @@ class RecipeBoxCLI
        puts "Goodbye!"
        is_running = false
      else
-       puts "Try again."
+       puts "Please enter a valid response:"
      end
    end
   end
@@ -137,49 +137,47 @@ class RecipeBoxCLI
     def self.recipe_box_or_no
 
       puts "Would you like to add this recipe to your recipe box? (Y/N)"
-      answer = STDIN.gets.chomp.downcase
+      answer1 = STDIN.gets.chomp.downcase
       is_running = true
       while is_running == true
       if answer == "y"
         my_box = RecipesBox.find_by(user_id: @@this_user.id)
         my_box.recipe_id = Recipe.last.id
+        puts "Done!  You can view your recipe box from the main menu."
+        is_running = false
+        puts "Do you want to add the ingredients for this recipe to your shopping list? (Y/N)"
 
-      elsif answer == "n"
+        answer2 = STDIN.gets.chomp.downcase
+        if answer2 == "y"
+
+        elsif answer2 == "n"
+
+        else
+          puts "Please enter a valid response - Y/N:"
+
+
+
+
+      elsif answer1 == "n"
         is_running = false
         self.options
 
       else
-       puts "Please enter a valid response - Y/N"
+       puts "Please enter a valid response - Y/N:"
       end
 
-end
+    end
 
 
-  # if answer1 == 'more'
-  #   while more == true do
-  #   i += 1
-    # url = @@url + "&p=#{i}"
-    # json = get_json(url)
-    # length = @@recipe_list_array.length
-    # json["results"].each_with_index {|hash, index|
-    #   indexed_item = "#{index + 1 + length}. #{hash["title"].delete("\n")}"
-    #   puts indexed_item
-    #   @@recipe_list_array << indexed_item
-    # }
-  #   puts "Do you want to see more? (Y/N)"
-  #     answer2 = STDIN.gets.chomp
-  #     if answer2 == "Y"
-  #       more = true
-  #     elsif answer2 == "N"
-  #       more = false
-  #       puts "Type the number of the recipe you want to view:"
-  #       answer1 = STDIN.gets.chomp
-  #     end
-  #   end
-  #
-  # else
-  #    answer1 = STDIN.gets.chomp
-  # end
+    def self.add_to_shopping_list
+
+
+
+
+    end
+
+
+
 
 
 
