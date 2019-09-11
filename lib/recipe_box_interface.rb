@@ -16,9 +16,9 @@ class RecipeBoxCLI
     puts `clear`
     puts "Welcome to Recipe Box!"
     puts "What is your first name?"
-    first_name = STDIN.gets.chomp.downcase
+    first_name = STDIN.gets.strip.downcase
     puts "What is your last name?"
-    last_name = STDIN.gets.chomp.downcase
+    last_name = STDIN.gets.strip.downcase
 
     if !User.find_by(first_name: first_name, last_name: last_name) #User.all.select{|user| user.full_name == first_name + " " + last_name}.length == 0
       @@this_user = User.create(first_name: first_name, last_name: last_name)
@@ -87,31 +87,45 @@ class RecipeBoxCLI
   end
 
   def self.recipe_search_by_ingredient
-    puts "Tell me your ingredient: "
-    answer = STDIN.gets.chomp.downcase
-    @@url = RECIPE_API + "?i=#{answer}"
-    json = get_json(@@url)
-    #recipe_list = json["results"].each {|x| puts x["title"]}
-    json["results"].each_with_index {|hash, index|
-      indexed_item = "#{index + 1}. #{hash["title"].gsub(/[^A-Z\/\-\' ]|\t\r\n\f\v/i, '')}" #delete("\n")
-      puts indexed_item
-      @@recipe_list_array << indexed_item
-    }
+    is_running = true
+    while is_running == true
 
+      puts "Tell me your ingredient: "
+      answer = STDIN.gets.chomp.downcase
+      @@url = RECIPE_API + "?i=#{answer}"
+      json = get_json(@@url)
+      if json["results"].length == 0
+        puts "So sorry, but I can't find anything with that ingredient!  Please try again."
+      else
+        is_running = false
+        json["results"].each_with_index {|hash, index|
+          indexed_item = "#{index + 1}. #{hash["title"].gsub(/[^A-Z\/\-\' ]|\t\r\n\f\v/i, '')}" #delete("\n")
+          puts indexed_item
+          @@recipe_list_array << indexed_item
+        }
+      end
+    end
     self.select_recipe
   end
 
   def self.recipe_search_by_name
-    puts "What keyword or title should I search for?"
-    answer = STDIN.gets.chomp.downcase
-    @@url = RECIPE_API + "?q=#{answer}"
-    json = get_json(@@url)
-    json["results"].each_with_index {|hash, index|
-      indexed_item = "#{index + 1}. #{hash["title"].gsub(/[^A-Z\/\-\' ]|\t\r\n\f\v/i, '')}" #delete("\n")
-      puts indexed_item
-      @@recipe_list_array << indexed_item
-    }
-
+    is_running = true
+    while is_running == true
+      puts "What keyword or title should I search for?"
+      answer = STDIN.gets.chomp.downcase
+      @@url = RECIPE_API + "?q=#{answer}"
+      json = get_json(@@url)
+      if json["results"].length == 0
+        puts "So sorry, but I can't find anything with that title or keyword!  Please try again."
+      else
+        is_running = false
+        json["results"].each_with_index {|hash, index|
+          indexed_item = "#{index + 1}. #{hash["title"].gsub(/[^A-Z\/\-\' ]|\t\r\n\f\v/i, '')}" #delete("\n")
+          puts indexed_item
+          @@recipe_list_array << indexed_item
+        }
+      end
+    end
     self.select_recipe
   end
 
@@ -121,7 +135,7 @@ class RecipeBoxCLI
     answer1 = nil
     json = get_json(@@url)
     while more == true do
-      puts "Type the number of the recipe you want to view, or, type 'more' to see more recipes:"
+      puts "Type the number of the recipe you want to view, or, 'more' to see more recipes, or, 'back' to return to the menu: "
       answer1 = STDIN.gets.chomp
       if answer1 == "more"
         i += 1
@@ -133,8 +147,9 @@ class RecipeBoxCLI
           puts indexed_item
           @@recipe_list_array << indexed_item
         }
-      # elsif answer1.to_i != Integer
-      #   puts "Please enter a valid response!"
+      elsif answer1 == "back"
+        more = false
+        self.options
       else
         more = false
       end
@@ -226,10 +241,12 @@ class RecipeBoxCLI
     end
 
 
-    def self.view_shopping_list
-      if @@this_user.recipes.length == 0
-        puts "No list yet, we need to find recipes first!!"
+    def self.view_shopping_list  #need to figure out how to take care of recipe list present but no ingredients
+      binding.pry
+      if @@this_user.recipes.length == 0 #|| @@this_user.ingredients.length == 0
+        puts "No list at the moment, we need to find recipes!!"
       else
+
         self.my_recipes.each do |recipe|
           IngredientItem.where(recipe_id: recipe.id).each do |ing_item|
             if ing_item.is_complete == true
@@ -257,9 +274,11 @@ class RecipeBoxCLI
               IngredientItem.where(recipe_id: recipe.id).each do |ing_item|
                 ing_item.destroy
               end
+              puts "List cleared!"
             end
           elsif input == "3"
             is_running = false
+            self.options
           else
             "Please enter a valid response!"
           end
@@ -267,21 +286,6 @@ class RecipeBoxCLI
       end
     end
 
-
-    #
-    #
-    #
-    #   puts "Do you want to check off any items from your list? (Y/N)"
-    #
-    #   if input == "y"
-    #     self.check_off_items
-    #   elsif input == "n"
-    #     is_running = false
-    #     puts "Do you want to "
-    #   else
-    #     puts "Please enter a valid response!"
-    #   end
-    # end
 
    def self.check_off_items
      puts "Which item can we check off your list?"

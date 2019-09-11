@@ -8,12 +8,10 @@ class User < ActiveRecord::Base
   end
 
   def ingredients
-    ingredient_arr = []
     my_recipe_box = RecipesBox.where(user_id: self.id)
-    my_recipe_box.each do |recipe|
-      ingredient_arr << IngredientItem.where(recipe_id: recipe.recipe_id)
-    end
-    ingredient_arr
+    my_recipe_box.collect do |recipe|
+      IngredientItem.where(recipe_id: recipe.recipe_id)
+    end 
   end
 
 end
