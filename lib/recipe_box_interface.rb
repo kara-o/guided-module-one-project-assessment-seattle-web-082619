@@ -56,13 +56,12 @@ class RecipeBoxCLI
        my_recipes.each_with_index{|recipe, index| puts "#{index + 1}. #{recipe.title}"}
        puts "If you want to view one of your recipes please type its number, or, type 'back' to return to the menu:" #index + 1?? recipe array
        input = STDIN.gets.chomp
-       binding.pry
+       #binding.pry
        if input == "back"
          self.options
-       elsif [0..my_recipes.length].include?(input.to_i)
-         binding.pry
+       elsif (0..my_recipes.length).include?(input.to_i)
          #recipe = my_recipes.find{|recipe| recipe.title.include?(recipe.title[input.length] + 2..recipe.title.length - 1])}
-         recipe = my_recipes[input.to_i + 1]
+         recipe = my_recipes[input.to_i - 1]
          puts `open #{recipe.url}`
        else
          puts "Please enter a valid response:"
@@ -88,7 +87,7 @@ class RecipeBoxCLI
     json = get_json(@@url)
     #recipe_list = json["results"].each {|x| puts x["title"]}
     json["results"].each_with_index {|hash, index|
-      indexed_item = "#{index + 1}. #{hash["title"].strip}" #delete("\n")
+      indexed_item = "#{index + 1}. #{hash["title"].gsub(/[^A-Z\/\-\' ]|\t\r\n\f\v/i, '')}" #delete("\n")
       puts indexed_item
       @@recipe_list_array << indexed_item
     }
@@ -102,7 +101,7 @@ class RecipeBoxCLI
     @@url = RECIPE_API + "?q=#{answer}"
     json = get_json(@@url)
     json["results"].each_with_index {|hash, index|
-      indexed_item = "#{index + 1}. #{hash["title"].strip}" #delete("\n")
+      indexed_item = "#{index + 1}. #{hash["title"].gsub(/[^A-Z\/\-\' ]|\t\r\n\f\v/i, '')}" #delete("\n")
       puts indexed_item
       @@recipe_list_array << indexed_item
     }
