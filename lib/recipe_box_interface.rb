@@ -1,6 +1,6 @@
 require_relative '../config/environment.rb'
 
-TESTING OUT SHOPPING CART
+#TESTING OUT SHOPPING CART
 
 class RecipeBoxCLI
 
