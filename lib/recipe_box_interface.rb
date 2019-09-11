@@ -55,29 +55,33 @@ class RecipeBoxCLI
 
      elsif choice == "3"
        my_recipes = @@this_user.recipes
-       my_recipes.each_with_index{|recipe, index| puts "#{index + 1}. #{recipe.title}"}
-       puts "If you want to view one of your recipes please type its number, or, type 'back' to return to the menu:" #index + 1?? recipe array
-       input = STDIN.gets.chomp
-       #binding.pry
-       if input == "back"
-         self.options
-       elsif (0..my_recipes.length).include?(input.to_i)
-         #recipe = my_recipes.find{|recipe| recipe.title.include?(recipe.title[input.length] + 2..recipe.title.length - 1])}
-         recipe = my_recipes[input.to_i - 1]
-         puts `open #{recipe.url}`
+       if my_recipes.length == 0
+         puts "Empty!!! Looks like you need to find some recipes first!"
        else
-         puts "Please enter a valid response:"
+         my_recipes.each_with_index{|recipe, index| puts "#{index + 1}. #{recipe.title}"}
+         puts "If you want to view one of your recipes please type its number, or, type 'back' to return to the menu:" #index + 1?? recipe array
+         input = STDIN.gets.chomp
+         if input == "back"
+           self.options
+         elsif (0..my_recipes.length).include?(input.to_i)
+         #recipe = my_recipes.find{|recipe| recipe.title.include?(recipe.title[input.length] + 2..recipe.title.length - 1])}
+           recipe = my_recipes[input.to_i - 1]
+           puts `open #{recipe.url}`
+           self.add_to_shopping_list(recipe.id)
+         else
+           puts "Please enter a valid response:"
+         end
        end
 
 
      elsif choice == "4"
-       puts "Soon you'll have a shopping list!"
+       self.view_shopping_list
 
      elsif choice == "5"
        puts "Goodbye!"
        is_running = false
      else
-       puts "Please enter a valid response:"
+       puts "Please enter a valid response!"
      end
    end
   end
@@ -129,12 +133,14 @@ class RecipeBoxCLI
           puts indexed_item
           @@recipe_list_array << indexed_item
         }
+      # elsif answer1.to_i != Integer
+      #   puts "Please enter a valid response!"
       else
         more = false
       end
     end
 
-    recipe_w_index = @@recipe_list_array.find{|recipe| recipe.include?(answer1)}
+    recipe_w_index = @@recipe_list_array.find{|recipe| recipe.include?(answer1)}  #optionally include s? if empty results, need response
 
     recipe = recipe_w_index[answer1.length + 2..recipe_w_index.length - 1]
 
@@ -142,12 +148,14 @@ class RecipeBoxCLI
     json["results"].each do |hash|
       hash.each do |k, v|
         if v.include?(recipe)
-          Recipe.create("title": v, "url": hash["href"])
+          Recipe.create("title": v, "url": hash["href"], "ingredients": hash["ingredients"])
           url = hash["href"]
+          binding.pry
           puts `open #{url}`
         end
       end
     end
+
 
     self.recipe_box_or_no
 
@@ -165,26 +173,27 @@ class RecipeBoxCLI
         my_box.save
         puts "Done!  You can view your recipe box from the main menu."
         # is_running = false
-        puts "Do you want to add the ingredients for this recipe to your shopping list? (Y/N)"
+        # puts "Do you want to add the ingredients for this recipe to your shopping list? (Y/N)"
+        #
+        # answer2 = STDIN.gets.chomp.downcase
+        # if answer2 == "y"
+        #   self.add_to_shopping_list
+        #   # ingredient_arr = Recipe.last.ingredients.split(", ")
+        #   # ingredient_arr.each do |item|
+        #   #   IngredientItem.create(name: item, recipe_id: Recipe.last.id)
+        #   # end
+        #
+        # elsif answer2 == "n"
+        #   puts "Wow you must have a good memory!"
+        #
+        # else
+        #   puts "Please enter a valid response - Y/N:"
+        # end
 
-        answer2 = STDIN.gets.chomp.downcase
-        if answer2 == "y"
-          puts "Soon you'll have a list!"
-
-
-        elsif answer2 == "n"
-          puts "Wow you must have a good memory!"
-
-        else
-          puts "Please enter a valid response - Y/N:"
-        end
-
-
-
+        self.add_to_shopping_list(Recipe.last.id)
 
       elsif answer1 == "n"
         puts "Okay, well let's look for a better recipe!"
-        self.options
 
       else
         puts "Please enter a valid response - Y/N:"
@@ -193,16 +202,62 @@ class RecipeBoxCLI
     end
 
 
-    def self.add_to_shopping_list
+    def self.add_to_shopping_list(id)
+      puts "Do you want to add the ingredients for this recipe to your shopping list? (Y/N)"
 
+      answer = STDIN.gets.chomp.downcase
+      if answer == "y"
+        ingredient_arr = Recipe.find(id).ingredients.split(", ")
+        ingredient_arr.each do |item|
+            IngredientItem.create(name: item, recipe_id: Recipe.find(id).id, is_complete: false)
+            puts "Added #{item}!"
+        end
 
+      elsif answer2 == "n"
+        puts "Wow you must have a good memory!"
 
+      else
+        puts "Please enter a valid response - Y/N:"
+      end
 
     end
 
+    def self.my_recipes
+      @@this_user.recipes
+    end
 
 
+    def self.view_shopping_list
+      self.my_recipes.each do |recipe|
+        IngredientItem.where(recipe_id: recipe.id).uniq.each do |ing_item|
+          if ing_item.is_complete == true
+            puts "(✓) #{ing_item.name}"
+          else
+            puts "( ) #{ing_item.name}"
+          end
+        end
+      end
+      puts "Do you want to check off any items from your list? (Y/N)"
+      input = STDIN.gets.chomp.downcase
+      if input == "y"
+        self.check_off_items
+      elsif input == "n"
+        self.options
+      else
+        puts "Please enter a valid response!"
+      end
+    end
 
+   def self.check_off_items
+     puts "Which item can we check off your list?"
+     input = STDIN.gets.chomp.downcase
+     binding.pry
+     self.my_recipes.each do |recipe|
+       IngredientItem.where(recipe_id: recipe.id, name: input, is_complete: false).uniq.each do |ing_item|
+         ing_item.update(is_complete: true)
+       end
+     end
+     self.view_shopping_list
+   end
 
-
-end
+  end
