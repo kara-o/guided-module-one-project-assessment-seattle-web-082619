@@ -85,10 +85,10 @@ class RecipeBoxCLI
        elsif choice == "4"
          self.view_shopping_list(this_user)
        elsif choice == "5"
-         is_running = false
          puts ''
          puts "Goodbye!"
          puts ''
+         exit(true)
        else
          puts ''
          puts "Please enter a valid response!"
@@ -251,6 +251,7 @@ class RecipeBoxCLI
     def self.add_to_shopping_list(this_user, new_recipe_or_from_box)
       running = true
       while running
+        puts `clear`
         puts ''
         puts "Do you want to add the ingredients for this recipe to your shopping list? (Y/N)"
         puts ''
@@ -316,6 +317,7 @@ class RecipeBoxCLI
               puts ''
               self.options(this_user)
           elsif input == "3"
+            puts `clear`
             self.options(this_user)
           else
             puts ''
