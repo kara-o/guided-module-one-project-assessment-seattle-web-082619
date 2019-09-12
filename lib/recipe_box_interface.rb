@@ -8,7 +8,7 @@ class RecipeBoxCLI
     puts `clear`
     puts ''
     puts ''
-    puts "Welcome to Recipe Box!!!!"
+    puts "Welcome to Recipe Box!!"
     puts ''
     puts ''
     puts "What is your first name?"
@@ -268,6 +268,7 @@ class RecipeBoxCLI
     end
 
     def self.view_shopping_list(this_user)
+      binding.pry
       if this_user.ingredient_items.length == 0
         puts ''
         puts "No list at the moment, we need to find recipes!!"
