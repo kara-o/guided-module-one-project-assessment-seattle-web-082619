@@ -16,3 +16,16 @@ new_recipe.save
 new_ingredient.save
 ShoppingListItem.create(user_id: new_user.id, ingredient_id: new_ingredient.id, is_complete: false)
 end
+
+
+10.times do
+  user = User.all.sample
+  recipe = Recipe.all.sample
+  ingredient = Ingredient.all.sample
+
+  user.recipes << recipe
+  recipe.ingredients << ingredient
+  user.save
+  recipe.save
+  ShoppingListItem.create(user_id: user.id, ingredient_id: ingredient.id, is_complete: false)
+end

@@ -62,29 +62,34 @@ class RecipeBoxCLI
              puts ''
           else
              my_recipes.each_with_index{|recipe, index| puts "#{index + 1}. #{recipe.title}"}
+             running = true
+             while running
              puts ''
              puts "If you want to view one of your recipes please type its number, or, type 'back' to return to the menu: "
              puts ''
              input = STDIN.gets.strip
                if input.downcase == "back"
-                 self.options(this_user)
-               elsif (0..my_recipes.length).include?(input.to_i)
+                 break
+               elsif input.to_i != 0 && (0..my_recipes.length).include?(input.to_i)
                  recipe_from_box = my_recipes[input.to_i - 1]
                  puts `open #{recipe_from_box.url}`
+                 running = false
                  self.add_to_shopping_list(this_user, recipe_from_box)
                else
                  puts ''
                  puts "Please enter a valid response:"
                  puts ''
                end
+             end
+             break
            end
        elsif choice == "4"
          self.view_shopping_list(this_user)
        elsif choice == "5"
+         is_running = false
          puts ''
          puts "Goodbye!"
          puts ''
-         is_running = false
        else
          puts ''
          puts "Please enter a valid response!"
@@ -104,8 +109,10 @@ class RecipeBoxCLI
        json = get_json(url)
        if json["results"].length == 0
          puts ''
-         puts "So sorry, but I can't find anything with that ingredient!  Please try again."
+         puts "So sorry, but I can't find anything with that ingredient!  Please try again, or type 'back' to return to the menu:"
          puts ''
+       elsif answer == 'back'
+         break
        else
          recipe_list_array = []
          json["results"].each_with_index {|hash, index|
@@ -115,10 +122,9 @@ class RecipeBoxCLI
            puts ''
            recipe_list_array << indexed_item
          }
-         is_running = false
+         self.select_recipe(this_user, url, recipe_list_array)
        end
     end
-    self.select_recipe(this_user, url, recipe_list_array)
   end
 
   def self.recipe_search_by_word(this_user)
@@ -132,10 +138,11 @@ class RecipeBoxCLI
        json = get_json(url)
        if json["results"].length == 0
          puts ''
-         puts "So sorry, but I can't find anything with that title or keyword!  Please try again."
+         puts "So sorry, but I can't find anything with that title or keyword!  Please try again, or type 'back' to return to the menu:"
          puts ''
+       elsif answer == 'back'
+         break
        else
-         is_running = false
          recipe_list_array = []
          json["results"].each_with_index {|hash, index|
            indexed_item = "#{index + 1}. #{hash["title"].gsub(/[^A-Z\/\-\' ]|\t\r\n\f\v/i, '')}"
@@ -144,9 +151,9 @@ class RecipeBoxCLI
            puts ''
            recipe_list_array << indexed_item
          }
+         self.select_recipe(this_user, url, recipe_list_array)
        end
     end
-    self.select_recipe(this_user, url, recipe_list_array)
   end
 
   def self.select_recipe(this_user, url, recipe_list_array)
@@ -154,7 +161,7 @@ class RecipeBoxCLI
     more = true
     answer1 = nil
     json = get_json(url)
-    while more == true do
+    while more == true
        puts ''
        puts "Type the number of the recipe you want to view, or, 'more' to see more recipes, or, 'back' to return to the menu: "
        puts ''
@@ -174,38 +181,36 @@ class RecipeBoxCLI
          }
        elsif answer1.downcase == "back"
          puts `clear`
-         self.options(this_user)
-         more = false
+         break
        elsif !(1..recipe_list_array.length).include?(answer1.to_i) && answer1.downcase != "more" && answer1.downcase != "back"
-         puts `clear`
          puts ''
          puts "Please enter a valid response!"
          puts ''
        else
          more = false
+         recipe_w_index = recipe_list_array.find{|recipe| recipe.include?(answer1)}
+         recipe = recipe_w_index[answer1.length + 2..recipe_w_index.length - 1]
+         json["results"].each do |hash|
+         hash.each do |k, v|
+            if v.include?(recipe)
+              Recipe.create("title": v, "url": hash["href"])
+              ingredients_string = hash["ingredients"]
+              ingredient_array = ingredients_string.split(", ")
+              ingredient_array.each do |item_string|
+                Ingredient.create(name: item_string.downcase)
+                Recipe.last.ingredients << Ingredient.last
+                Recipe.last.save
+              end
+              url2 = hash["href"]
+              puts `open #{url2}`
+          end
        end
+     end
+      new_recipe = Recipe.last
+      self.recipe_box_or_no(this_user, new_recipe)
     end
-    recipe_w_index = recipe_list_array.find{|recipe| recipe.include?(answer1)}
-    recipe = recipe_w_index[answer1.length + 2..recipe_w_index.length - 1]
-    json["results"].each do |hash|
-      hash.each do |k, v|
-        if v.include?(recipe)
-            Recipe.create("title": v, "url": hash["href"])
-            ingredients_string = hash["ingredients"]
-            ingredient_array = ingredients_string.split(", ")
-            ingredient_array.each do |item_string|
-              Ingredient.create(name: item_string.downcase)
-              Recipe.last.ingredients << Ingredient.last
-              Recipe.last.save
-            end
-            url2 = hash["href"]
-            puts `open #{url2}`
-        end
-      end
-    end
-    new_recipe = Recipe.last
-    self.recipe_box_or_no(this_user, new_recipe)
-    end
+  end
+end
 
     def self.recipe_box_or_no(this_user, new_recipe)
       is_running = true
@@ -214,8 +219,8 @@ class RecipeBoxCLI
          puts "Would you like to add this recipe to your recipe box? (Y/N)"
          puts ''
          answer = STDIN.gets.strip.downcase
-         puts `clear`
          if answer == "y"
+           is_running = false
            this_user.recipes << new_recipe
            this_user.save
            puts ''
@@ -226,14 +231,12 @@ class RecipeBoxCLI
                puts "Hey, this is cool!  Another user named #{other_users[0].first_name.capitalize} also chose this recipe!"
              end
            puts ''
-           is_running = false
            self.add_to_shopping_list(this_user, new_recipe)
          elsif answer == "n"
+           is_running = false
            puts ''
            puts "Okay, well let's look for a better recipe!"
            puts ''
-           is_running = false
-           self.options(this_user)
          else
            puts ''
            puts "Please enter a valid response!"
@@ -243,9 +246,9 @@ class RecipeBoxCLI
     end
 
 
-    def self.add_to_shopping_list(this_user, new_recipe_or_from_box) #recipe - needs to be either last or the one you are viewing)
+    def self.add_to_shopping_list(this_user, new_recipe_or_from_box)
       is_running = true
-      while is_running == true
+      while is_running
         puts ''
         puts "Do you want to add the ingredients for this recipe to your shopping list? (Y/N)"
         puts ''
@@ -253,45 +256,42 @@ class RecipeBoxCLI
         puts `clear`
         if answer == "y"
           new_recipe_or_from_box.ingredients.each do |ing|
-            ShoppingListItem.create(user_id: this_user.id, ingredient_id: ing.id, is_complete: false)
+            this_user.shopping_list_items.create(user_id: this_user.id, ingredient_id: ing.id, is_complete: false)
             puts "Added #{ing.name}!"
           end
-          is_running = false
-          self.options(this_user)
+          break
         elsif answer == "n"
           puts `clear`
           puts ''
           puts "Wow you must have a good memory!"
           puts ''
-          is_running = false
-          self.options(this_user)
+          break
         else
           puts ''
           puts "Please enter a valid response!"
           puts ''
         end
      end
+     self.options(this_user)
    end
 
     def self.view_shopping_list(this_user)
-       if this_user.shopping_list_items.length == 0
-          puts ''
-          puts "No list at the moment, we need to find recipes!!"
-          puts ''
-          self.options(this_user)
-       else
-          this_user.shopping_list_items.each do |item|
-              if item.is_complete == true
-                puts ''
-                puts "(✓) #{item.ingredient.name}"
-              else
-                puts ''
-                puts "( ) #{item.ingredient.name}"
-              end
-          end
-       end
-       is_running = true
-       while is_running == true
+        if this_user.shopping_list_items.length == 0
+           puts ''
+           puts "No list at the moment, we need to find recipes!!"
+           puts ''
+        else
+          is_running = true
+          while is_running == true
+            this_user.shopping_list_items.each do |item|
+               if item.is_complete == true
+                 puts ''
+                 puts "(✓) #{item.ingredient.name}"
+               else
+                 puts ''
+                 puts "( ) #{item.ingredient.name}"
+               end
+            end
           puts ''
           puts "What would you like to do?  Please enter a number: "
           puts ''
@@ -303,50 +303,51 @@ class RecipeBoxCLI
           puts ''
           input = STDIN.gets.strip
           if input == "1"
+            is_running = false
             self.check_off_items(this_user)
           elsif input == "2"
+            is_running = false
             this_user.shopping_list_items.destroy_all
               puts `clear`
               puts ''
               puts "List cleared!"
               puts ''
-              is_running = false
-              self.options(this_user)
           elsif input == "3"
             is_running = false
-            self.options(this_user)
           else
             puts ''
             puts "Please enter a valid response!"
             puts ''
           end
         end
+       end
     end
 
    def self.check_off_items(this_user)
      is_running = true
      count = 0
      while is_running == true
-     puts "Which item can we check off your list?"
-     input = STDIN.gets.strip.downcase
-
-     matches_arr = this_user.shopping_list_items.select{ |item|
-       item.ingredient.name == input }
-
-     if matches_arr.length == 0 && count == 0
-        puts "Hmm, I don't see that item on your list, please try again."
-        count += 1
-     elsif matches_arr.length == 0 && count == 1
-        puts "Still not seeing it...let's go back to the main menu and start over."
-        is_running = false
-        self.options(this_user)
-     else
-       matches_arr.each do |item|
-         item.update(is_complete: true)
+       puts "Which item can we check off your list?"
+       input = STDIN.gets.strip.downcase
+       matches_arr = this_user.shopping_list_items.select{ |item|
+         item.ingredient.name == input }
+       if matches_arr.length == 0 && count == 0
+          puts "Hmm, I don't see that item on your list, please try again."
+          puts ''
+          puts ''
+          count += 1
+       elsif matches_arr.length == 0 && count == 1
+         is_running = false
+         puts ''
+         puts ''
+         puts "Still not seeing it...let's go back to the main menu and start over."
+       else
+         is_running = false
+         matches_arr.each do |item|
+           item.update(is_complete: true)
+         end
+         self.view_shopping_list(this_user)
        end
-       is_running = false
-       self.view_shopping_list(this_user)
-     end
      end
    end
 
