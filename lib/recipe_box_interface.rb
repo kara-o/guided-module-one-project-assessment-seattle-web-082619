@@ -7,9 +7,7 @@ class RecipeBoxCLI
   def self.welcome
     puts `clear`
     puts ''
-    puts ''
-    puts "Welcome to Recipe Box!!"
-    puts ''
+    puts "WELCOME TO THE RECIPE BOX APP!"
     puts ''
     puts "What is your first name?"
     puts ''
@@ -22,15 +20,17 @@ class RecipeBoxCLI
     if !User.find_by(first_name: first_name, last_name: last_name)
       this_user = User.create(first_name: first_name, last_name: last_name)
       puts ''
-      puts "Yay, I'm so glad you decided to join!  Your account has been created.  Get ready to cook!"
+      puts "Hi #{this_user.first_name.capitalize}, I'm so glad you decided to join!  Your account has been created.  Get ready to cook!"
       puts ''
+      puts `clear`
       self.options(this_user)
 
     else
       this_user = User.find_by(first_name: first_name, last_name: last_name)
       puts ''
-      puts "Welcome back!  You must be hungry!"
+      puts "Welcome back #{this_user.first_name.capitalize}!  You must be hungry!"
       puts ''
+      puts `clear`
       self.options(this_user)
     end
   end
@@ -42,7 +42,6 @@ class RecipeBoxCLI
       puts ''
       puts "What would you like to do?  Here are your options, please enter a number: "
       puts ''
-      puts ''
       puts "1. Search for a recipe by ingredient"
       puts ''
       puts "2. Search for a recipe by title or keyword"
@@ -52,7 +51,7 @@ class RecipeBoxCLI
       puts "4. View my shopping list"
       puts ''
       puts "5. Exit"
-      choice = STDIN.gets.chomp
+      choice = STDIN.gets.strip
       puts `clear`
 
      if choice == "1"
@@ -72,8 +71,8 @@ class RecipeBoxCLI
          puts ''
          puts "If you want to view one of your recipes please type its number, or, type 'back' to return to the menu: "
          puts ''
-         input = STDIN.gets.chomp
-         if input == "back"
+         input = STDIN.gets.strip
+         if input.downcase == "back"
            self.options(this_user)
          elsif (0..my_recipes.length).include?(input.to_i)
            recipe = my_recipes[input.to_i - 1]
@@ -110,7 +109,7 @@ class RecipeBoxCLI
       puts ''
       puts "Tell me your ingredient: "
       puts ''
-      answer = STDIN.gets.chomp.downcase
+      answer = STDIN.gets.strip.downcase
       url = RECIPE_API + "?i=#{answer}"
       json = get_json(url)
       if json["results"].length == 0
@@ -169,9 +168,9 @@ class RecipeBoxCLI
       puts ''
       puts "Type the number of the recipe you want to view, or, 'more' to see more recipes, or, 'back' to return to the menu: "
       puts ''
-      answer1 = STDIN.gets.chomp
+      answer1 = STDIN.gets.strip
       puts `clear`
-      if answer1 == "more"
+      if answer1.downcase == "more"
         i += 1
         url1 = url + "&p=#{i}"
         json = get_json(url1)
@@ -183,10 +182,15 @@ class RecipeBoxCLI
           puts ''
           recipe_list_array << indexed_item
         }
-      elsif answer1 == "back"
+      elsif answer1.downcase == "back"
         more = false
         puts `clear`
         self.options(this_user)
+      elsif !(1..recipe_list_array.length).include?(answer1.to_i) && answer1.downcase != "more" && answer1.downcase != "back"
+        puts `clear`
+        puts ''
+        puts "Please enter a valid response!"
+        puts ''
       else
         more = false
       end
@@ -200,50 +204,63 @@ class RecipeBoxCLI
 
       hash.each do |k, v|
         if v.include?(recipe)
-          Recipe.create("title": v, "url": hash["href"], "ingredients": hash["ingredients"])
+          Recipe.create("title": v, "url": hash["href"])
+          ingredients_string = hash["ingredients"]
+          ingredient_array = ingredients_string.split(", ")
+          ingredients_array.each do |item_string|
+            Ingredient.new(name: item_string)
+            Recipe.last.ingredients << Ingredient.last
+            Recipe.last.save
+          end
+          new_recipe = Recipe.last
           url2 = hash["href"]
           puts `open #{url2}`
         end
       end
     end
-    self.recipe_box_or_no(this_user)
+    self.recipe_box_or_no(this_user, new_recipe)
     end
 
-    def self.recipe_box_or_no(this_user)
+    def self.recipe_box_or_no(this_user, new_recipe)
       puts ''
       puts "Would you like to add this recipe to your recipe box? (Y/N)"
       puts ''
-      answer = STDIN.gets.chomp.downcase
+      answer = STDIN.gets.strip.downcase
       puts `clear`
 
       if answer == "y"
-        recipe = Recipe.last
-        recipe.update(user_id: this_user.id)
-        id = recipe.id
+        this_user.recipes << new_recipe
+        this_user.save
         puts ''
-        puts "Done!  You can view your recipe box from the main menu."
+        puts "Done! Great choice, #{this_user.first_name.capitalize}!"
+        puts `clear`
+        other_users = User.all.select{|user| user.recipes.include?(new_recipe)}
+          if other_users.length > 0
+            puts "Hey, this is cool!  Another user named #{other_users[0].first_name.capitalize} also chose this recipe!"
+          end
         puts ''
-        self.add_to_shopping_list(this_user, id)
+        self.add_to_shopping_list(this_user, new_recipe)
 
       elsif answer == "n"
         puts ''
         puts "Okay, well let's look for a better recipe!"
         puts ''
+        self.options(this_user)
 
       else
         puts ''
-        puts "Please enter a valid response - Y/N:"
+        puts "Please enter a valid response!"
         puts ''
       end
 
     end
 
 
-    def self.add_to_shopping_list(this_user, id)
+    def self.add_to_shopping_list(this_user, new_recipe or viewed_in_box) #recipe - needs to be either last or the one you are viewing)
       puts ''
       puts "Do you want to add the ingredients for this recipe to your shopping list? (Y/N)"
       puts ''
-      answer = STDIN.gets.chomp.downcase
+      answer = STDIN.gets.strip.downcase
       puts `clear`
       if answer == "y"
         my_recipe = Recipe.find(id)

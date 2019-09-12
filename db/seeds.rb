@@ -16,8 +16,3 @@ new_recipe.save
 new_ingredient.save
 ShoppingListItem.create(user_id: new_user.id, ingredient_id: new_ingredient.id, is_complete: false)
 end
-
-# User.create(first_name: "kara", last_name: "odle")
-# Recipe.create(title: "Spinach Salad", url: "www.simplyrecipes.com")
-# Ingredient.create(name: "Feta Cheese")
-# ShoppingListItem.create(user_id: User.first.id, ingredient_id: Ingredient.first.id)
