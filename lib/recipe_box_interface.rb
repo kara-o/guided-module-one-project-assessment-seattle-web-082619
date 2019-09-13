@@ -332,41 +332,41 @@ class RecipeBoxCLI
                  puts "( ) #{item.ingredient.name}"
                end
             end
-          puts ''
-          puts ''
-          puts ''
-          puts ''
-          puts "What would you like to do?  Please enter a number: "
-          puts ''
-          puts "1. Check off item on list"
-          puts ''
-          puts "2. Clear shopping list"
-          puts ''
-          puts "3. Return to menu"
-          puts ''
-          input = STDIN.gets.strip
-          if input == "1"
-            self.check_off_items(this_user)
-            running = false
-          elsif input == "2"
-            this_user.shopping_list_items.destroy_all
+            puts ''
+            puts ''
+            puts ''
+            puts ''
+            puts "What would you like to do?  Please enter a number: "
+            puts ''
+            puts "1. Check off item on list"
+            puts ''
+            puts "2. Clear shopping list"
+            puts ''
+            puts "3. Return to menu"
+            puts ''
+            input = STDIN.gets.strip
+            if input == "1"
+              self.check_off_items(this_user)
+              running = false
+            elsif input == "2"
+              this_user.shopping_list_items.destroy_all
               puts `clear`
               puts ''
               puts "List cleared!"
               puts ''
               # self.options(this_user)
               running = false
-          elsif input == "3"
-            puts `clear`
-            # self.options(this_user)
-            running = false
-          else
-            puts ''
-            puts "Please enter a valid response!"
-            puts ''
+            elsif input == "3"
+              puts `clear`
+              # self.options(this_user)
+              running = false
+            else
+              puts ''
+              puts "Please enter a valid response!"
+              puts ''
+            end
           end
         end
-       end
     end
 
    def self.check_off_items(this_user)
