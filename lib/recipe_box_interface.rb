@@ -138,7 +138,7 @@ class RecipeBoxCLI
        json = get_json(url)
        if json["results"].length == 0 && answer.downcase != 'back'
          puts ''
-         puts "So sorry, but I can't find anything with that ingredient!  Please try again, or type 'back' to return to the menu:"
+         puts "So sorry, but I can't find anything with that ingredient!  Please try again, or type 'back' to return to the menu and try searching by keyword:"
          puts ''
        elsif answer == 'back'
          puts `clear`
@@ -382,7 +382,7 @@ class RecipeBoxCLI
        input = STDIN.gets.strip.downcase
        puts ''
        matches_arr = this_user.shopping_list_items.select{ |item|
-         item.ingredient.name == input }
+         item.ingredient.name.downcase == input }
        if matches_arr.length == 0 && count == 0
           puts "Hmm, I don't see that item on your list, please try again."
           puts ''
@@ -395,7 +395,9 @@ class RecipeBoxCLI
          matches_arr.each do |item|
            item.update(is_complete: true)
          end
+         puts `clear`
          self.view_shopping_list(this_user)
+         running = false
        end
      end
    end
