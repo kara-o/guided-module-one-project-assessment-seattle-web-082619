@@ -203,15 +203,20 @@ class RecipeBoxCLI
          puts `clear`
          i += 1
          url1 = url + "&p=#{i}"
-         json = get_json(url1)
-         length = recipe_list_array.length
-         json["results"].each_with_index {|hash, index|
-           indexed_item = "#{index + 1 + length}. #{hash["title"].strip}"
-           puts ''
-           puts indexed_item
-           puts ''
-           recipe_list_array << indexed_item
-         }
+         begin
+           json = get_json(url1)
+           length = recipe_list_array.length
+           json["results"].each_with_index {|hash, index|
+             indexed_item = "#{index + 1 + length}. #{hash["title"].strip}"
+             puts ''
+             puts indexed_item
+             puts ''
+             recipe_list_array << indexed_item
+           }
+         rescue RestClient::InternalServerError
+           puts "Bummer, there are no more recipes to view!"
+           more = false
+         end
        elsif answer1.downcase == 'back'
          puts `clear`
          more = false
