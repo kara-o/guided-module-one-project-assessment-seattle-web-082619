@@ -7,7 +7,7 @@ class RecipeBoxCLI
   def self.welcome
     puts `clear`
     puts ''
-    puts "WELCOME TO THE RECIPE BOX APP!"
+    puts "WELCOME TO THE RECIPE BOX APP!".colorize(:blue)
     puts ''
     puts "What is your first name?"
     puts ''
@@ -69,6 +69,7 @@ class RecipeBoxCLI
              puts ''
              input = STDIN.gets.strip
                if input.downcase == "back"
+                 puts `clear`
                  break
                elsif input.to_i != 0 && (0..my_recipes.length).include?(input.to_i)
                  recipe_from_box = my_recipes[input.to_i - 1]
@@ -111,6 +112,7 @@ class RecipeBoxCLI
          puts "So sorry, but I can't find anything with that ingredient!  Please try again, or type 'back' to return to the menu:"
          puts ''
        elsif answer == 'back'
+         puts `clear`
          running = false
        else
          recipe_list_array = []
@@ -140,6 +142,7 @@ class RecipeBoxCLI
          puts "So sorry, but I can't find anything with that title or keyword!  Please try again, or type 'back' to return to the menu:"
          puts ''
        elsif answer == 'back'
+         puts `clear`
          running = false
        else
          recipe_list_array = []
@@ -214,22 +217,23 @@ class RecipeBoxCLI
 
     def self.recipe_box_or_no(this_user, new_recipe)
       running = true
-      while running == true
+      while running
          puts `clear`
          puts ''
          puts "Would you like to add this recipe to your recipe box? (Y/N)"
          puts ''
          answer = STDIN.gets.strip.downcase
          if answer == "y"
+           running = false
            this_user.recipes << new_recipe
            this_user.save
+           other_users = User.all.select{|user| user.recipes.include?(new_recipe)}
            puts ''
            puts "Done! Great choice, #{this_user.first_name.capitalize}!"
            puts ''
-           other_users = User.all.select{|user| user.recipes.include?(new_recipe)}
-             if other_users.length > 0 && other_users[0].full_name != this_user.full_name
-               puts "Hey, this is cool!  Another user named #{other_users[0].first_name.capitalize} also chose this recipe!"
-             end
+           if other_users.length > 0 && other_users[0].full_name != this_user.full_name
+             puts "Hey, this is cool!  Another user named #{other_users[0].first_name.capitalize} also chose this recipe!"
+           end
            puts ''
            self.add_to_shopping_list(this_user, new_recipe)
          elsif answer == "n"
@@ -251,7 +255,6 @@ class RecipeBoxCLI
     def self.add_to_shopping_list(this_user, new_recipe_or_from_box)
       running = true
       while running
-        puts `clear`
         puts ''
         puts "Do you want to add the ingredients for this recipe to your shopping list? (Y/N)"
         puts ''
@@ -264,6 +267,9 @@ class RecipeBoxCLI
             puts ''
             puts "Added #{ing.name}!"
           end
+          puts ''
+          puts ''
+          puts ''
           break
         elsif answer == "n"
           puts `clear`
@@ -297,6 +303,9 @@ class RecipeBoxCLI
                  puts "( ) #{item.ingredient.name}"
                end
             end
+          puts ''
+          puts ''
+          puts ''
           puts ''
           puts "What would you like to do?  Please enter a number: "
           puts ''
