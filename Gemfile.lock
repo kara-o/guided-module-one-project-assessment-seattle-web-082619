@@ -12,6 +12,7 @@ GEM
       minitest (~> 5.1)
       tzinfo (~> 1.1)
       zeitwerk (~> 2.1, >= 2.1.8)
+    artii (2.1.2)
     coderay (1.1.2)
     colorize (0.8.1)
     concurrent-ruby (1.1.5)
@@ -66,6 +67,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  artii (~> 2.1, >= 2.1.2)
   colorize (~> 0.8.1)
   faker
   json

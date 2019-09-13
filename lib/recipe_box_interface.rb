@@ -5,29 +5,41 @@ class RecipeBoxCLI
   RECIPE_API = 'http://www.recipepuppy.com/api/'
 
   def self.welcome
+
     puts `clear`
     puts ''
-    puts "WELCOME TO THE RECIPE BOX APP!".colorize(:blue)
+    puts <<-'IMG'
+    __          __  _                            _          _____           _              ____            _
+    \ \        / / | |                          | |        |  __ \         (_)            |  _ \          | |
+     \ \  /\  / /__| | ___ ___  _ __ ___   ___  | |_ ___   | |__) |___  ___ _ _ __   ___  | |_) | _____  __ |
+      \ \/  \/ / _ \ |/ __/ _ \| '_ ` _ \ / _ \ | __/ _ \  |  _  // _ \/ __| | '_ \ / _ \ |  _ < / _ \ \/ / |
+       \  /\  /  __/ | (__ (_) | | | | | |  __/ | |_ (_) | | | \ \  __/ (__| | |_) |  __/ | |_) | (_) >  <|_|
+        \/  \/ \___|_|\___\___/|_| |_| |_|\___|  \__\___/  |_|  \_\___|\___|_| .__/ \___| |____/ \___/_/\_(_)
+                                                                             | |
+                                                                             |_|
+    IMG
+
+    #puts "WELCOME TO THE RECIPE BOX APP!".colorize(:blue)
     puts ''
-    puts "What is your first name?"
+    puts "What is your first name?".colorize(:cyan)
     puts ''
     first_name = STDIN.gets.strip.downcase
     puts ''
-    puts "What is your last name?"
+    puts "What is your last name?".colorize(:cyan)
     puts ''
     last_name = STDIN.gets.strip.downcase
     if !User.find_by(first_name: first_name, last_name: last_name)
       this_user = User.create(first_name: first_name, last_name: last_name)
       puts `clear`
       puts ''
-      puts "Hi #{this_user.first_name.capitalize}, I'm so glad you decided to join!  Your account has been created.  Get ready to cook!"
+      puts "Hi #{this_user.first_name.capitalize}, I'm so glad you decided to join!  Your account has been created.  Get ready to cook!".colorize(:cyan)
       puts ''
       self.options(this_user)
     else
       this_user = User.find_by(first_name: first_name, last_name: last_name)
       puts `clear`
       puts ''
-      puts "Welcome back #{this_user.first_name.capitalize}!  You must be hungry!"
+      puts "Welcome back #{this_user.first_name.capitalize}!  You must be hungry!".colorize(:cyan)
       puts ''
       self.options(this_user)
     end
@@ -37,17 +49,17 @@ class RecipeBoxCLI
     is_running = true
     while is_running
        puts ''
-       puts "What would you like to do?  Here are your options, please enter a number: "
+       puts "What would you like to do?  Here are your options, please enter a number: ".colorize(:light_magenta)
        puts ''
-       puts "1. Search for a recipe by ingredient"
+       puts "1. Search for a recipe by ingredient".colorize(:light_magenta)
        puts ''
-       puts "2. Search for a recipe by title or keyword"
+       puts "2. Search for a recipe by title or keyword".colorize(:light_magenta)
        puts ''
-       puts "3. View my recipe box"
+       puts "3. View my recipe box".colorize(:light_magenta)
        puts ''
-       puts "4. View my shopping list"
+       puts "4. View my shopping list".colorize(:light_magenta)
        puts ''
-       puts "5. Exit"
+       puts "5. Exit".colorize(:light_magenta)
        choice = STDIN.gets.strip
        puts `clear`
        if choice == "1"
@@ -58,14 +70,18 @@ class RecipeBoxCLI
           my_recipes = this_user.recipes
           if my_recipes.length == 0
              puts ''
-             puts "Empty!!! Looks like you need to find some recipes!"
+             puts "Empty!!! Looks like you need to find some recipes!".colorize(:cyan)
              puts ''
           else
-             my_recipes.each_with_index{|recipe, index| puts "#{index + 1}. #{recipe.title}"}
+             my_recipes.each_with_index{|recipe, index|
+               puts "#{index + 1}. #{recipe.title}"..colorize(:light_magenta)
+               puts ''
+               puts ''
+             }
              running = true
              while running
              puts ''
-             puts "If you want to view one of your recipes please type its number, or, type 'back' to return to the menu: "
+             puts "If you want to view one of your recipes please type its number, or, type 'back' to return to the menu: ".colorize(:cyan)
              puts ''
              input = STDIN.gets.strip
                if input.downcase == "back"
@@ -78,7 +94,7 @@ class RecipeBoxCLI
                  self.add_to_shopping_list(this_user, recipe_from_box)
                else
                  puts ''
-                 puts "Please enter a valid response!"
+                 puts "Please enter a valid response!".colorize(:cyan)
                  puts ''
                end
              end
@@ -87,12 +103,21 @@ class RecipeBoxCLI
          self.view_shopping_list(this_user)
        elsif choice == "5"
          puts ''
-         puts "Goodbye!"
+         puts <<-'IMG'
+         _____                 _ _                _
+        / ____|               | | |              | |
+       | |  __  ___   ___   __| | |__  _   _  ___| |
+       | | |_ |/ _ \ / _ \ / _` | '_ \| | | |/ _ \ |
+       | |__| | (_) | (_) | (_| | |_) | |_| |  __/_|
+        \_____|\___/ \___/ \__,_|_.__/ \__, |\___(_)
+                                        __/ |
+                                       |___/
+         IMG
          puts ''
          exit(true)
        else
          puts ''
-         puts "Please enter a valid response!"
+         puts "Please enter a valid response!".colorize(:cyan)
          puts ''
        end
     end
@@ -101,7 +126,7 @@ class RecipeBoxCLI
   def self.recipe_search_by_ingredient(this_user)
     running = true
     puts ''
-    puts "Tell me your ingredient: "
+    puts "Tell me your ingredient: ".colorize(:cyan)
     puts ''
     while running
        answer = STDIN.gets.strip.downcase
@@ -109,7 +134,7 @@ class RecipeBoxCLI
        json = get_json(url)
        if json["results"].length == 0 && answer.downcase != 'back'
          puts ''
-         puts "So sorry, but I can't find anything with that ingredient!  Please try again, or type 'back' to return to the menu:"
+         puts "So sorry, but I can't find anything with that ingredient!  Please try again, or type 'back' to return to the menu:".colorize(:cyan)
          puts ''
        elsif answer == 'back'
          puts `clear`
@@ -117,7 +142,7 @@ class RecipeBoxCLI
        else
          recipe_list_array = []
          json["results"].each_with_index {|hash, index|
-           indexed_item = "#{index + 1}. #{hash["title"].gsub(/[^A-Z\/\-\' ]|\t\r\n\f\v/i, '')}"
+           indexed_item = "#{index + 1}. #{hash["title"].gsub(/[^A-Z\/\-\' ]|\t\r\n\f\v/i, '')}".colorize(:light_magenta)
            puts ''
            puts indexed_item
            puts ''
@@ -131,7 +156,7 @@ class RecipeBoxCLI
   def self.recipe_search_by_word(this_user)
     running = true
     puts ''
-    puts "What keyword or title should I search for?"
+    puts "What keyword or title should I search for?".colorize(:cyan)
     puts ''
     while running
        answer = STDIN.gets.chomp.downcase
@@ -139,7 +164,7 @@ class RecipeBoxCLI
        json = get_json(url)
        if json["results"].length == 0
          puts ''
-         puts "So sorry, but I can't find anything with that title or keyword!  Please try again, or type 'back' to return to the menu:"
+         puts "So sorry, but I can't find anything with that title or keyword!  Please try again, or type 'back' to return to the menu:".colorize(:cyan)
          puts ''
        elsif answer == 'back'
          puts `clear`
@@ -147,7 +172,7 @@ class RecipeBoxCLI
        else
          recipe_list_array = []
          json["results"].each_with_index {|hash, index|
-           indexed_item = "#{index + 1}. #{hash["title"].gsub(/[^A-Z\/\-\' ]|\t\r\n\f\v/i, '')}"
+           indexed_item = "#{index + 1}. #{hash["title"].gsub(/[^A-Z\/\-\' ]|\t\r\n\f\v/i, '')}".colorize(:light_magenta)
            puts ''
            puts indexed_item
            puts ''
@@ -165,7 +190,7 @@ class RecipeBoxCLI
     json = get_json(url)
     while more == true
        puts ''
-       puts "Type the number of the recipe you want to view, or, 'more' to see more recipes, or, 'back' to return to the menu: "
+       puts "Type the number of the recipe you want to view, or, 'more' to see more recipes, or, 'back' to return to the menu: ".colorize(:cyan)
        puts ''
        answer1 = STDIN.gets.strip
        if answer1.downcase == 'more'
@@ -175,7 +200,7 @@ class RecipeBoxCLI
          json = get_json(url1)
          length = recipe_list_array.length
          json["results"].each_with_index {|hash, index|
-           indexed_item = "#{index + 1 + length}. #{hash["title"].strip}"
+           indexed_item = "#{index + 1 + length}. #{hash["title"].strip}".colorize(:light_magenta)
            puts ''
            puts indexed_item
            puts ''
@@ -187,7 +212,7 @@ class RecipeBoxCLI
          self.options(this_user)
        elsif !(1..recipe_list_array.length).include?(answer1.to_i) && answer1.downcase != "more" && answer1.downcase != "back"
          puts ''
-         puts "Please enter a valid response!"
+         puts "Please enter a valid response!".colorize(:cyan)
          puts ''
        else
          more = false
@@ -220,7 +245,7 @@ class RecipeBoxCLI
       while running
          puts `clear`
          puts ''
-         puts "Would you like to add this recipe to your recipe box? (Y/N)"
+         puts "Would you like to add this recipe to your recipe box? (Y/N)".colorize(:cyan)
          puts ''
          answer = STDIN.gets.strip.downcase
          if answer == "y"
@@ -229,10 +254,10 @@ class RecipeBoxCLI
            this_user.save
            other_users = User.all.select{|user| user.recipes.include?(new_recipe)}
            puts ''
-           puts "Done! Great choice, #{this_user.first_name.capitalize}!"
+           puts "Done! Great choice, #{this_user.first_name.capitalize}!".colorize(:cyan)
            puts ''
            if other_users.length > 0 && other_users[0].full_name != this_user.full_name
-             puts "Hey, this is cool!  Another user named #{other_users[0].first_name.capitalize} also chose this recipe!"
+             puts "Hey, this is cool!  Another user named #{other_users[0].first_name.capitalize} also chose this recipe!".colorize(:cyan)
            end
            puts ''
            self.add_to_shopping_list(this_user, new_recipe)
@@ -240,12 +265,12 @@ class RecipeBoxCLI
            running = false
            puts `clear`
            puts ''
-           puts "Okay, well let's look for a better recipe!"
+           puts "Okay, well let's look for a better recipe!".colorize(:cyan)
            puts ''
            self.options(this_user)
          else
            puts ''
-           puts "Please enter a valid response!"
+           puts "Please enter a valid response!".colorize(:cyan)
            puts ''
          end
        end
@@ -256,7 +281,7 @@ class RecipeBoxCLI
       running = true
       while running
         puts ''
-        puts "Do you want to add the ingredients for this recipe to your shopping list? (Y/N)"
+        puts "Do you want to add the ingredients for this recipe to your shopping list? (Y/N)".colorize(:cyan)
         puts ''
         answer = STDIN.gets.strip.downcase
         puts `clear`
@@ -265,7 +290,7 @@ class RecipeBoxCLI
             this_user.shopping_list_items.create(user_id: this_user.id, ingredient_id: ing.id, is_complete: false)
             puts ''
             puts ''
-            puts "Added #{ing.name}!"
+            puts "Added #{ing.name}!".colorize(:cyan)
           end
           puts ''
           puts ''
@@ -274,12 +299,12 @@ class RecipeBoxCLI
         elsif answer == "n"
           puts `clear`
           puts ''
-          puts "Wow you must have a good memory!"
+          puts "Wow you must have a good memory!".colorize(:cyan)
           puts ''
           break
         else
           puts ''
-          puts "Please enter a valid response!"
+          puts "Please enter a valid response!".colorize(:cyan)
           puts ''
         end
      end
@@ -289,7 +314,7 @@ class RecipeBoxCLI
     def self.view_shopping_list(this_user)
         if this_user.shopping_list_items.length == 0
            puts ''
-           puts "No list at the moment, we need to find recipes!!"
+           puts "No list at the moment, we need to find recipes!!".colorize(:cyan)
            puts ''
         else
           running = true
@@ -307,13 +332,13 @@ class RecipeBoxCLI
           puts ''
           puts ''
           puts ''
-          puts "What would you like to do?  Please enter a number: "
+          puts "What would you like to do?  Please enter a number: ".colorize(:light_magenta)
           puts ''
-          puts "1. Check off item on list"
+          puts "1. Check off item on list".colorize(:light_magenta)
           puts ''
-          puts "2. Clear shopping list"
+          puts "2. Clear shopping list".colorize(:light_magenta)
           puts ''
-          puts "3. Return to menu"
+          puts "3. Return to menu".colorize(:light_magenta)
           puts ''
           input = STDIN.gets.strip
           if input == "1"
@@ -322,7 +347,7 @@ class RecipeBoxCLI
             this_user.shopping_list_items.destroy_all
               puts `clear`
               puts ''
-              puts "List cleared!"
+              puts "List cleared!".colorize(:cyan)
               puts ''
               self.options(this_user)
           elsif input == "3"
@@ -330,7 +355,7 @@ class RecipeBoxCLI
             self.options(this_user)
           else
             puts ''
-            puts "Please enter a valid response!"
+            puts "Please enter a valid response!".colorize(:cyan)
             puts ''
           end
         end
@@ -341,18 +366,18 @@ class RecipeBoxCLI
      running = true
      count = 0
      while running
-       puts "Which item can we check off your list?"
+       puts "Which item can we check off your list?".colorize(:cyan)
        input = STDIN.gets.strip.downcase
        puts ''
        matches_arr = this_user.shopping_list_items.select{ |item|
          item.ingredient.name == input }
        if matches_arr.length == 0 && count == 0
-          puts "Hmm, I don't see that item on your list, please try again."
+          puts "Hmm, I don't see that item on your list, please try again.".colorize(:cyan)
           puts ''
           count += 1
        elsif matches_arr.length == 0 && count == 1
          puts ''
-         puts "Still not seeing it...let's go back to the main menu and start over."
+         puts "Still not seeing it...let's go back to the main menu and start over.".colorize(:cyan)
        else
          matches_arr.each do |item|
            item.update(is_complete: true)
