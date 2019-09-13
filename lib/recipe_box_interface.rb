@@ -220,7 +220,7 @@ class RecipeBoxCLI
        elsif answer1.downcase == 'back'
          puts `clear`
          more = false
-         self.options(this_user)
+         # self.options(this_user)
        elsif !(1..recipe_list_array.length).include?(answer1.to_i) && answer1.downcase != "more" && answer1.downcase != "back"
          puts ''
          puts "Please enter a valid response!"
@@ -230,7 +230,7 @@ class RecipeBoxCLI
          recipe_w_index = recipe_list_array.find{|recipe| recipe.include?(answer1)}
          recipe = recipe_w_index[answer1.length + 2..recipe_w_index.length - 1]
          json["results"].each do |hash|
-         hash.each do |k, v|
+          hash.each do |k, v|
             if v.include?(recipe)
               Recipe.create("title": v, "url": hash["href"])
               ingredients_string = hash["ingredients"]
@@ -240,17 +240,16 @@ class RecipeBoxCLI
                 Recipe.last.ingredients << Ingredient.last
                 Recipe.last.save
               end
-              url2 = hash["href"]
-              puts `open #{url2}`
+             url2 = hash["href"]
+             puts `open #{url2}`
+            end
           end
+         end
+         new_recipe = Recipe.last
+         self.recipe_box_or_no(this_user, new_recipe)
        end
-      end
-      new_recipe = Recipe.last
-      self.recipe_box_or_no(this_user, new_recipe)
-      more = false
-    end
+     end
   end
- end
 
     def self.recipe_box_or_no(this_user, new_recipe)
       running = true
